@@ -1,0 +1,49 @@
+{
+    "manifest_version": 3,
+    "name": "VoxNemesis TTS (Phonon Edition)",
+    "version": "0.1.0",
+    "description": "Local-first Chrome extension powered by Gradium Phonon. On-device text-to-speech via WebAssembly, with 100+ voices.",
+    "permissions": [
+        "contextMenus",
+        "activeTab",
+        "scripting",
+        "storage",
+        "offscreen"
+    ],
+    "host_permissions": [
+        "https://huggingface.co/api/models/gradium/*",
+        "https://huggingface.co/gradium/phonon-31m-en/*",
+        "https://huggingface.co/gradium/phonon-voices/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "VoxNemesis TTS (Phonon)",
+        "default_icon": {
+            "16": "icons/optimized/Nemesis_Logo_Icon_16.png",
+            "32": "icons/optimized/Nemesis_Logo_Icon_32.png",
+            "48": "icons/optimized/Nemesis_Logo_Icon_48.png",
+            "128": "icons/optimized/Nemesis_Logo_Icon_128.png"
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "icons": {
+        "16": "icons/optimized/Nemesis_Logo_Icon_16.png",
+        "48": "icons/optimized/Nemesis_Logo_Icon_48.png",
+        "128": "icons/optimized/Nemesis_Logo_Icon_128.png"
+    },
+    "content_security_policy": {
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    }
+}

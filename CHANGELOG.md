@@ -1,0 +1,14 @@
+# Changelog
+
+## 0.1.0
+- Initial release: VoxNemesis TTS (Phonon Edition).
+- Gradium Phonon runs entirely in the browser through the `phonon-tts` wasm package, in a module worker inside an MV3 offscreen document.
+- Model registry with the public `phonon-31m-en` checkpoint and the gated `phonon-40m-multilingual` one.
+- Local checkpoint support: a checkpoint in `models/` is preferred over the Hub, so the extension runs with no network at all.
+- 102 voices from the Gradium catalog, generated into `lib/voices.js` by `scripts/fetch-assets.js`, filtered by language and downloaded on first use.
+- Two playback modes: streaming for immediacy, buffered for scrubbing, seeking and replaying.
+- WebGPU when the browser offers a hardware adapter and the weights are q8 GGUF; WASM otherwise. The popup reports which one it got.
+- Context menu entry: right-click selected text and read it aloud.
+- Speed, volume, variation and seed controls, persisted in `chrome.storage.local` and shared across tabs.
+- Jest suites for the helper, the model registry, the voice catalog and the popup logic; 74 tests.
+- A Playwright smoke test that loads the unpacked extension in a real Chromium and exercises the whole engine.
