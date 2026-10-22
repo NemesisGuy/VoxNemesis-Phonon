@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "VoxNemesis TTS (Phonon Edition)",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "description": "Local-first Chrome extension powered by Gradium Phonon. On-device text-to-speech via WebAssembly, with 100+ voices.",
     "permissions": [
         "contextMenus",

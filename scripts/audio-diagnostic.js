@@ -26,14 +26,11 @@ const MIME = {
 };
 
 const TEXTS = [
-    {
-        label: 'short',
-        text: 'On the morning of Wednesday 21 October 2026'
-    },
-    {
-        label: 'long',
-        text: 'On the morning of Wednesday 21 October 2026, the PHP project published an emergency security release fixing two critical remote code execution vulnerabilities in the language that runs a large share of the web. By 14:00 UTC the patches were live, Linux distributions had them in advance, and security agencies were telling operators to patch immediately or take their sites offline. If your site runs PHP, and if you run WordPress, it runs PHP, this is the week to check what you are actually serving.'
-    }
+    { label: 'tiny', text: 'Hello.' },
+    { label: 'one', text: 'On the morning of Wednesday 21 October 2026' },
+    { label: 'two', text: 'On the morning of Wednesday 21 October 2026, the PHP project published an emergency security release fixing two critical remote code execution vulnerabilities in the language that runs a large share of the web.' },
+    { label: 'three', text: 'On the morning of Wednesday 21 October 2026, the PHP project published an emergency security release fixing two critical remote code execution vulnerabilities in the language that runs a large share of the web. By 14:00 UTC the patches were live, Linux distributions had them in advance, and security agencies were telling operators to patch immediately or take their sites offline.' },
+    { label: 'four', text: 'On the morning of Wednesday 21 October 2026, the PHP project published an emergency security release fixing two critical remote code execution vulnerabilities in the language that runs a large share of the web. By 14:00 UTC the patches were live, Linux distributions had them in advance, and security agencies were telling operators to patch immediately or take their sites offline. If your site runs PHP, and if you run WordPress, it runs PHP, this is the week to check what you are actually serving.' }
 ];
 
 function serve() {
@@ -92,6 +89,10 @@ async function main() {
             console.log(`  firstAudioMs=${run.firstAudioMs} totalMs=${run.totalMs} modelChunks=${run.chunks}`);
             console.log(`  merged: ${JSON.stringify(run.mergedStats)}`);
             console.log(`  scheduledMismatch=${run.scheduledMismatch}`);
+            console.log(`  PLAYBACK: rtf=${run.rtf} (generation vs real time) wall=${run.wallMs}ms`);
+            console.log(`  gaps: ${run.gapCount} underruns, max ${run.maxGapMs}ms, total ${run.totalGapMs}ms`);
+            console.log(`  queue depth: min ${run.minDepthMs}ms, max ${run.maxDepthMs}ms, at the end ${run.finalDepthMs}ms`);
+            console.log(`  NaN: ${run.nanSamples} samples, first at chunk ${run.nanChunk} offset ${run.nanOffset} (frame ~${run.framesBeforeNan})`);
             run.rawStats.slice(0, 4).forEach((s, i) => console.log(`   chunk[${i}] ${JSON.stringify(s)}`));
             if (run.rawStats.length > 4) {
                 const last = run.rawStats[run.rawStats.length - 1];

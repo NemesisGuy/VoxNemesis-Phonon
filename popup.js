@@ -65,7 +65,6 @@ import { findVoice } from './lib/voices.js';
             el.deviceNote.textContent = 'WebGPU is faster, but the current phonon-tts build can corrupt long audio.';
         }
     }
-
     function populateLanguageSelect(modelId, selectedCode) {
         const languages = languagesForModel(modelId);
         el.languageSelect.innerHTML = '';
@@ -130,7 +129,14 @@ import { findVoice } from './lib/voices.js';
         if (stored.volume !== undefined) el.volumeRange.value = stored.volume;
         if (stored.temperature !== undefined) el.temperatureRange.value = stored.temperature;
         if (stored.seed !== undefined) el.seedInput.value = stored.seed;
-        if (stored.device !== undefined) el.deviceSelect.value = stored.device;
+        // Only the CPU is offered. An older version may have stored 'auto' or 'webgpu',
+        // which reaches the broken WebGPU path, so it is overwritten rather than kept.
+        if (stored.device !== undefined && stored.device !== 'cpu') {
+            el.deviceSelect.value = 'cpu';
+            chrome.storage.local.set({ device: 'cpu' });
+        } else if (stored.device !== undefined) {
+            el.deviceSelect.value = stored.device;
+        }
 
         updateSliderLabels();
         updateDeviceNote(el.deviceSelect.value);

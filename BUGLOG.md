@@ -8,14 +8,21 @@ Concise history of regressions, fixes, and remaining checks.
 
 ## Upstream
 
-- **phonon-tts 0.4.1 corrupts audio on the WebGPU path.** Reported to `gradium-ai/xn-ptts`. The details are in `scripts/audio-diagnostic.js`, which reproduces it with no extension involved:
+- **phonon-tts 0.4.1 corrupts audio on the WebGPU path.** Reported to `gradium-ai/xn-ptts` as [issue #248](https://github.com/gradium-ai/xn-ptts/issues/248), with the measurements below and a fix prepared on a branch.
 
-  | | WebGPU (`device: 'auto'`) | CPU (`device: 'cpu'`) |
-  |---|---|---|
-  | 9-word sentence | 8.40s, no NaN | 3.76s, no NaN |
-  | 90-word paragraph | 61.44s, **888,960 NaN samples (60%)** | 30.80s, no NaN |
+  The end-of-speech logit already differs on the very first frame — WebGPU −3.54 against CPU −11.79, same seed and text — so the two backends disagree before anything is generated. From the second chunk on, the WebGPU output is entirely NaN, in the PCM and in the end-of-speech logits. A NaN logit never satisfies the end-of-speech rule, so the generation runs to its full frame budget instead of stopping: exactly twice the CPU's frames in every case, and mostly noise.
 
-  The generation overshoots the model's frame budget and the overshoot comes back as NaN, which is a burst of noise in the middle of the utterance. The CPU path through the same code is clean. Until it is fixed, the extension defaults to the CPU and offers WebGPU as an opt-in.
+  | text | CPU frames | WebGPU frames | NaN samples |
+  |---|---:|---:|---:|
+  | "Hello." | 17 | 34 | 0 |
+  | 9 words | 47 | 105 | 0 |
+  | 2 sentences | 163 | 305 | 0 |
+  | 3 sentences | 291 | 568 | 504,960 |
+  | 4 sentences | 385 | 768 | 1,474,560 |
+
+  Ruled out along the way: the readback overlap (`Readback::OVERLAP` is the only structural difference between the two paths, and turning it off changes nothing), the KV cache tail (the attention narrows to `current_end` and does not multiply by a mask), and the q8 weight upload (the packing, the f16 scale and `unpack4` all line up).
+
+  The native runtimes have no WebGPU backend, so only the browser is affected. Building the browser package without the `webgpu` feature makes `device: 'auto'` produce output identical to `device: cpu`.
 
 ## Recently Fixed
 

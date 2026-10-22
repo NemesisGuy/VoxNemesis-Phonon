@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+- The WebGPU options are disabled rather than offered. They were reachable, and the current runtime's WebGPU path corrupts the audio, so the extension now has no way to reach it.
+- A stored `device` of `auto` or `webgpu` from an older version is overwritten with `cpu` on load.
+- Added `scripts/audio-diagnostic.js`, `scripts/analyse_audio.py` and `scripts/swap-wasm.ps1`: the harness that proved the upstream WebGPU bug, the WAV analyser that reads its output, and the tool that puts a locally built `ptts-wasm` into the extension so a change to the runtime can be tested against the real engine.
+
 ## 0.1.2
 - **Fixed: WebGPU produced corrupted audio.** The extension defaulted to `device: 'auto'`, which picks WebGPU on a machine with an adapter, and the current phonon-tts 0.4.1 WebGPU path overshoots the frame budget and returns the overshoot as NaN samples. Long utterances came out as a burst of noise. The default is now the CPU; WebGPU is an opt-in with a warning.
 - Added `scripts/audio-diagnostic.js` and `scripts/analyse_audio.py`, which reproduce the upstream WebGPU bug outside the extension and measure the NaN runs.

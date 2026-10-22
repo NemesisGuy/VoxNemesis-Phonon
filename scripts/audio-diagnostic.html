@@ -64,7 +64,17 @@
             source.connect(state.gain);
             const startAt = Math.max(state.nextStartTime, ctx.currentTime);
             source.start(startAt);
+
+            // How far the playback had already run past the end of the last chunk. Anything
+            // above zero is a gap in the audio: the queue ran dry.
+            const gap = startAt - state.nextStartTime;
+            // How much audio is queued ahead of the play head.
+            const depth = startAt + buffer.duration - ctx.currentTime;
+
             state.nextStartTime = startAt + buffer.duration;
+            state.gaps.push(gap);
+            state.depths.push(depth);
+            state.arrivals.push(performance.now());
             return buffer;
         }
 
@@ -84,11 +94,15 @@
             results.ctxStateAtStart = ctx.state;
             const gain = ctx.createGain();
             gain.connect(ctx.destination);
-            const state = { gain, nextStartTime: 0 };
+            const state = { gain, nextStartTime: 0, gaps: [], depths: [], arrivals: [] };
 
             for (const entry of texts) {
                 const raw = [];
                 const scheduled = [];
+                state.gaps = [];
+                state.depths = [];
+                state.arrivals = [];
+                const wallStart = performance.now();
                 const speech = tts.stream(entry.text, { voice: 'default' });
                 for await (const pcm of speech) {
                     raw.push(pcm);
@@ -96,11 +110,33 @@
                     scheduled.push({ len: buf.length, rate: buf.sampleRate, stats: stats(buf.getChannelData(0)) });
                 }
                 const statsDone = await speech.done.catch(() => null);
+                const wallMs = performance.now() - wallStart;
 
                 const total = raw.reduce((a, p) => a + p.length, 0);
                 const merged = new Float32Array(total);
                 let off = 0;
                 for (const p of raw) { merged.set(p, off); off += p.length; }
+
+                const gaps = state.gaps;
+                const depths = state.depths;
+                const positiveGaps = gaps.filter((g) => g > 0.0005);
+                const audioSeconds = total / tts.sampleRate;
+                const rtf = wallMs / 1000 / audioSeconds;
+
+                // Where the generation goes bad: the first chunk that carries a NaN, and the
+                // offset inside it.
+                let nanChunk = -1;
+                let nanOffset = -1;
+                let nanSamples = 0;
+                for (let c = 0; c < raw.length; c += 1) {
+                    const p = raw[c];
+                    for (let i = 0; i < p.length; i += 1) {
+                        if (!Number.isFinite(p[i])) {
+                            if (nanChunk < 0) { nanChunk = c; nanOffset = i; }
+                            nanSamples += 1;
+                        }
+                    }
+                }
 
                 // Does the scheduled buffer hold exactly what the model produced?
                 let mismatch = 0;
@@ -119,12 +155,26 @@
                     chunkLens: raw.map((p) => p.length),
                     rawStats: raw.map((p) => stats(p)),
                     totalSamples: total,
-                    durationSeconds: total / tts.sampleRate,
+                    durationSeconds: audioSeconds,
                     mergedStats: stats(merged),
                     scheduledMismatch: mismatch,
                     firstAudioMs: statsDone ? statsDone.firstAudioMs : null,
                     totalMs: statsDone ? statsDone.totalMs : null,
                     chunks: statsDone ? statsDone.chunks : null,
+                    // Playback health: how much audio was queued ahead of the play head, and
+                    // how often the queue ran dry.
+                    wallMs: Math.round(wallMs),
+                    rtf: Number(rtf.toFixed(3)),
+                    nanChunk,
+                    nanOffset,
+                    nanSamples,
+                    framesBeforeNan: nanChunk < 0 ? -1 : nanChunk * (raw[0] ? raw[0].length : 0),
+                    gapCount: positiveGaps.length,
+                    maxGapMs: Math.round(Math.max(0, ...positiveGaps) * 1000),
+                    totalGapMs: Math.round(positiveGaps.reduce((a, g) => a + g, 0) * 1000),
+                    minDepthMs: Math.round(Math.min(...depths) * 1000),
+                    maxDepthMs: Math.round(Math.max(...depths) * 1000),
+                    finalDepthMs: Math.round(depths[depths.length - 1] * 1000),
                     wav: Array.from(new Uint8Array(encodeWav(merged, tts.sampleRate)))
                 });
             }
