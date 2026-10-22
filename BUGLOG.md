@@ -8,21 +8,22 @@ Concise history of regressions, fixes, and remaining checks.
 
 ## Upstream
 
-- **phonon-tts 0.4.1 corrupts audio on the WebGPU path.** Reported to `gradium-ai/xn-ptts` as [issue #248](https://github.com/gradium-ai/xn-ptts/issues/248), with the measurements below and a fix prepared on a branch.
+- **The WebGPU path computes different numbers than the CPU, and the model is calibrated against the CPU's.** Reported to `gradium-ai/xn-ptts` as [issue #248](https://github.com/gradium-ai/xn-ptts/issues/248) and to `gradium-ai/xn` as [issue #123](https://github.com/NemesisGuy/xn/issues/123), with a prototype fix and the missing regression test on a branch.
 
-  The end-of-speech logit already differs on the very first frame — WebGPU −3.54 against CPU −11.79, same seed and text — so the two backends disagree before anything is generated. From the second chunk on, the WebGPU output is entirely NaN, in the PCM and in the end-of-speech logits. A NaN logit never satisfies the end-of-speech rule, so the generation runs to its full frame budget instead of stopping: exactly twice the CPU's frames in every case, and mostly noise.
+  The CPU's q8 matmul quantises the **activations** to q8_0 before its integer dot, so it computes `d_w * sum(q_w * q_x)`. The WebGPU backend keeps the activations in f32 and dequantises the weights instead, so it computes `d_w * sum(q_w * x)`. Measured against an f64 reference, the CPU is off by 0.038 and the GPU by 1e-6 — **the GPU is the accurate one, and it is the one out of step with the model.**
+
+  So the browser's WebGPU path is not running the model that was calibrated: the end-of-speech logit already differs on the first frame (−3.54 against −11.79, same seed and text), the generation diverges from there, the end-of-speech rule never fires, and the utterance runs to its full frame budget — exactly twice as long as it should be. From the second chunk on the latents go NaN, which is the noise.
 
   | text | CPU frames | WebGPU frames | NaN samples |
   |---|---:|---:|---:|
   | "Hello." | 17 | 34 | 0 |
   | 9 words | 47 | 105 | 0 |
-  | 2 sentences | 163 | 305 | 0 |
   | 3 sentences | 291 | 568 | 504,960 |
   | 4 sentences | 385 | 768 | 1,474,560 |
 
-  Ruled out along the way: the readback overlap (`Readback::OVERLAP` is the only structural difference between the two paths, and turning it off changes nothing), the KV cache tail (the attention narrows to `current_end` and does not multiply by a mask), and the q8 weight upload (the packing, the f16 scale and `unpack4` all line up).
+  Nothing covered the q8 path: the parity tests in `xn` cover f32 matmul and the other ops, but not the q8 matmul, which is the one the models use.
 
-  The native runtimes have no WebGPU backend, so only the browser is affected. Building the browser package without the `webgpu` feature makes `device: 'auto'` produce output identical to `device: cpu`.
+  The native runtimes are unaffected — they have no WebGPU backend — and the CPU path is what the model was calibrated against, so the CPU is correct as it stands. The browser package should not ship the WebGPU path until the two agree.
 
 ## Recently Fixed
 
