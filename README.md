@@ -42,16 +42,49 @@ The runtime is MIT OR Apache-2.0. The weights carry their own licences: 31m is A
 - WebGPU is used when the browser offers a hardware adapter and the weights are the q8 GGUF. Otherwise the model runs on the CPU. The popup says which one it got.
 - Settings live in `chrome.storage.local` and are shared across every tab.
 
-## Load the Extension (Chrome/Edge)
+## Load the Extension
 
-You do **not** need Node or npm to use the extension. The model downloads automatically inside the extension on first use.
+You do **not** need Node or npm to use the extension, and **you do not need a zip**. The model downloads automatically inside the extension on first use.
 
-1. Open `chrome://extensions` (or `edge://extensions`).
-2. Enable **Developer mode**.
-3. Click **Load unpacked** and select the repository root folder (`VoxNemesis-Phonon`).
-4. Pin the extension if desired and open the popup to adjust settings.
+### Opera GX
 
-> Chrome 137 and newer refuse `--load-extension` in branded builds. Loading unpacked through the extensions page still works. If you script the load, use Chromium or pass `--enable-unsafe-extension-debugging`.
+1. Open Opera GX.
+2. Go to `opera://extensions` — type it straight into the address bar. `chrome://extensions` also works.
+3. Turn on **Developer mode** (the toggle at the top right).
+4. Click **Load unpacked**.
+5. Pick the folder that contains `manifest.json`: `C:\Users\Reign\Projects\VoxNemesis-Phonon`. Not its parent, and not the `lib` folder.
+6. The extension appears as **VoxNemesis TTS (Phonon Edition)**. Pin it: click the puzzle-piece icon in the toolbar, find the extension, and pin it.
+
+### Chrome or Edge
+
+Same steps, on `chrome://extensions` or `edge://extensions`.
+
+> Chrome 137 and newer refuse `--load-extension` in branded builds. Loading unpacked through the extensions page still works. If you script the load, use Chromium or pass `--enable-unsafe-extension-debugging`. Opera GX 136 is on Chromium 136 and accepts the flag either way.
+
+### When you *do* need a zip
+
+- Submitting to the Chrome Web Store or the Opera addons store.
+- Sharing the extension with someone who does not have the folder.
+
+For that, package the tracked files:
+
+```
+git archive -o release/voxnemesis-phonon-extension-<ver>.zip HEAD
+```
+
+An unpacked folder never needs archiving. The zip is a store submission format, not an install format.
+
+## Brand
+
+The popup is built on the NemesisNet production tokens. `brand-tokens.css` is vendored verbatim from [the brand guide](https://brand.nemesisnet.co.za) (v2026.10.11) and `style.css` consumes it.
+
+- Nemesis Blue `#1E88E5`, bright `#2979FF`, deep `#0f4c81`.
+- Aurora Teal `#00C2A8`, flare `#33D6B7`, ember `#008B6A`.
+- Nemesis Black `#0a0e27`, white `#F4F4F4`, gray `#3b3b3b`.
+- The system font stack, with no webfont request.
+
+To pick up a brand change, replace `brand-tokens.css` from the brand guide and diff it. `style.css` only adds one token of its own: `--status-warning`, the brand's own header orange promoted to a semantic colour so a failure still reads as a failure.
+
 
 ## Usage
 
@@ -93,7 +126,14 @@ The gated 40m checkpoints work the same way. Accept the licence on the model pag
 
 - Requirements: Node 18+ (for the tests and the voice generator only).
 - `npm install`, then `npm test` for the unit tests.
-- `node scripts/smoke-test.js` loads the extension in a real Chromium and exercises the whole engine. It needs Playwright available; set `PLAYWRIGHT_PATH` if it is not on the default resolution path.
+- `node scripts/smoke-test.js` loads the extension in a real Chromium and exercises the whole engine. It needs Playwright available; set `PLAYWRIGHT_PATH` if it is not on the default resolution path. Set `BROWSER_EXECUTABLE` to point it at a specific browser — for example Opera GX:
+
+```powershell
+$env:BROWSER_EXECUTABLE="$env:LOCALAPPDATA\Programs\Opera GX\opera.exe"
+node scripts/smoke-test.js
+```
+
+The extension has been verified in both Chromium and Opera GX 136.
 - `npm run fetch:voices` regenerates `lib/voices.js` from the Gradium catalog.
 - The upstream runtime is vendored in `lib/phonon-tts/`. It is not modified. To move to a new version, replace the folder and read its README again — the API moves.
 
@@ -108,6 +148,7 @@ The gated 40m checkpoints work the same way. Accept the licence on the model pag
 ## Folder Layout
 
 - `lib/phonon-tts/` — the vendored upstream runtime, with the wasm builds.
+- `brand-tokens.css` — the NemesisNet production tokens, vendored from the brand guide.
 - `lib/models.js` — the model registry: models, languages, licences.
 - `lib/voices.js` — the generated voice catalog.
 - `lib/helper.js` — pure helpers shared by the engine and the popup.

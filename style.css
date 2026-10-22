@@ -1,11 +1,14 @@
+/* VoxNemesis TTS (Phonon Edition) — popup styling.
+ *
+ * Built on the NemesisNet production tokens in brand-tokens.css. Nothing here invents a
+ * colour that is not in that token stack, with one exception: --status-warning, which is
+ * the brand's own header orange (#FF6F3C) promoted to a semantic colour so a failure
+ * still reads as a failure.
+ */
+
+/* The one token the brand does not name, taken from its own header gradient. */
 :root {
-    --primary-color: #6366f1;
-    --primary-hover: #4f46e5;
-    --text-color: #f8fafc;
-    --glass-bg: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    --font-family: 'Outfit', sans-serif;
+    --status-warning: #FF6F3C;
 }
 
 html,
@@ -19,8 +22,14 @@ body {
 }
 
 body {
-    font-family: var(--font-family);
-    background: linear-gradient(135deg, #1e1b4b, #312e81, #4338ca);
+    font-family: var(--font-stack);
+    /* The brand's canvas, rebalanced for a 340px surface: the same three washes and the
+     * same colours, with the geometry scaled down so none of them swallows the popup. */
+    background:
+        radial-gradient(circle at 12% 0%, rgba(41, 121, 255, 0.30) 0%, transparent 58%),
+        radial-gradient(circle at 96% 12%, rgba(0, 194, 168, 0.16) 0%, transparent 52%),
+        radial-gradient(circle at 45% 100%, rgba(41, 121, 255, 0.14) 0%, transparent 62%),
+        var(--nemesis-black);
     color: var(--text-color);
     display: flex;
     justify-content: center;
@@ -50,15 +59,20 @@ header {
 }
 
 h1 {
-    font-weight: 300;
+    font-weight: 800;
     margin: 0;
     font-size: 1.5rem;
     letter-spacing: 1px;
 }
 
+/* The brand's heading treatment: a gradient, blue into aurora teal. */
 .highlight {
-    font-weight: 600;
-    color: #a5b4fc;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--nemesis-blue-bright) 0%, var(--aurora-base) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--nemesis-blue-bright);
 }
 
 .title-row {
@@ -72,7 +86,7 @@ h1 {
     height: 42px;
     border-radius: 8px;
     border: 1px solid var(--glass-border);
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(10, 14, 39, 0.35);
 }
 
 .controls-group {
@@ -83,14 +97,14 @@ label {
     display: block;
     font-size: 0.8rem;
     margin-bottom: 3px;
-    opacity: 0.9;
-    font-weight: 300;
+    color: var(--text-muted);
+    font-weight: 500;
 }
 
 .field-note {
     font-size: 0.68rem;
-    opacity: 0.6;
-    font-weight: 300;
+    color: var(--text-muted);
+    font-weight: 400;
     margin-bottom: 4px;
 }
 
@@ -98,29 +112,43 @@ label {
     position: relative;
 }
 
-select {
+/* Inputs sit on a translucent Nemesis Black, so the gradient still shows through. */
+select,
+.glass-input {
     width: 100%;
+    background: rgba(10, 14, 39, 0.55);
+    border: 1px solid var(--glass-border);
+    color: var(--text-color);
+    padding: 6px 10px;
+    border-radius: var(--ui-radius);
+    font-family: var(--font-stack);
+    font-size: 0.85rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: var(--motion-btn);
+}
+
+select {
     appearance: none;
     -webkit-appearance: none;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--glass-border);
-    color: white;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-family: var(--font-family);
-    font-size: 0.85rem;
     cursor: pointer;
-    outline: none;
-    transition: all 0.2s;
 }
 
-select:hover {
-    background: rgba(0, 0, 0, 0.3);
+select:hover,
+.glass-input:hover {
+    background: rgba(10, 14, 39, 0.72);
+    border-color: rgba(41, 121, 255, 0.35);
 }
 
-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+select:focus,
+.glass-input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+option {
+    background: var(--bg-color);
+    color: var(--text-color);
 }
 
 input[type="range"] {
@@ -135,7 +163,7 @@ input[type="range"]::-webkit-slider-thumb {
     height: 16px;
     width: 16px;
     border-radius: 50%;
-    background: var(--text-color);
+    background: var(--nemesis-white);
     cursor: pointer;
     margin-top: -6px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -144,27 +172,12 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-webkit-slider-runnable-track {
     width: 100%;
     height: 4px;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--glass-border);
     border-radius: 2px;
 }
 
-.glass-input {
-    width: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--glass-border);
-    color: white;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-family: var(--font-family);
-    font-size: 0.85rem;
-    outline: none;
-    box-sizing: border-box;
-    transition: all 0.2s;
-}
-
-.glass-input:focus {
-    border-color: var(--primary-color);
-    background: rgba(0, 0, 0, 0.3);
+input[type="range"]:hover::-webkit-slider-thumb {
+    background: var(--aurora-base);
 }
 
 .timeline-container {
@@ -173,7 +186,8 @@ input[type="range"]::-webkit-slider-runnable-track {
     gap: 6px;
     margin-top: 4px;
     font-size: 0.75rem;
-    font-weight: 300;
+    color: var(--text-muted);
+    font-weight: 400;
 }
 
 .timeline-container span {
@@ -188,22 +202,29 @@ input[type="range"]::-webkit-slider-runnable-track {
     width: 100%;
 }
 
+/* The live .btn-glass pattern. */
 .action-btn {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
-    color: white;
+    color: var(--text-color);
     padding: 6px 14px;
-    border-radius: 8px;
-    font-family: var(--font-family);
+    border-radius: var(--ui-radius);
+    font-family: var(--font-stack);
     font-size: 0.85rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: var(--motion-btn);
     width: 100%;
 }
 
 .action-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: var(--primary-color);
+    background: var(--accent-hover);
+    color: var(--nemesis-black);
+    border-color: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--accent-glow);
 }
 
 .playback-controls {
@@ -215,9 +236,9 @@ input[type="range"]::-webkit-slider-runnable-track {
 }
 
 .control-btn {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--glass-bg);
     border: 1px solid var(--glass-border);
-    color: white;
+    color: var(--text-color);
     width: 42px;
     height: 42px;
     border-radius: 50%;
@@ -225,11 +246,12 @@ input[type="range"]::-webkit-slider-runnable-track {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: var(--motion-btn);
 }
 
 .control-btn:hover:enabled {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-color);
     transform: translateY(-2px);
 }
 
@@ -242,44 +264,44 @@ input[type="range"]::-webkit-slider-runnable-track {
     cursor: not-allowed;
 }
 
+/* The live .btn--dual pattern: Nemesis Blue into Aurora Teal. */
 .control-btn.primary {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    background: linear-gradient(90deg, var(--nemesis-blue) 0%, var(--aurora-base) 100%);
+    border: 1px solid transparent;
+    color: var(--nemesis-black);
+    box-shadow: 0 4px 15px var(--accent-glow);
 }
 
 .control-btn.primary:hover:enabled {
-    background: var(--primary-hover);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    box-shadow: 0 6px 20px rgba(0, 194, 168, 0.35);
 }
 
 .control-btn.primary.active {
-    background: var(--primary-hover);
+    background: var(--nemesis-blue);
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .control-btn.warning:hover:enabled {
-    background: rgba(239, 68, 68, 0.4);
-    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(255, 111, 60, 0.35);
+    border-color: rgba(255, 111, 60, 0.6);
 }
 
 .status {
     text-align: center;
     font-size: 0.75rem;
     margin-top: 4px;
-    opacity: 0.7;
-    font-weight: 300;
+    color: var(--text-muted);
+    font-weight: 400;
     min-height: 1.2em;
 }
 
 .status.error {
-    opacity: 1;
-    color: #fca5a5;
+    color: var(--status-warning, #FF6F3C);
 }
 
 .loader {
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top: 3px solid var(--primary-color);
+    border: 3px solid var(--glass-border);
+    border-top: 3px solid var(--accent-color);
     border-radius: 50%;
     width: 24px;
     height: 24px;
@@ -295,7 +317,7 @@ input[type="range"]::-webkit-slider-runnable-track {
 .overlay {
     position: absolute;
     inset: 0;
-    background: rgba(15, 23, 42, 0.78);
+    background: rgba(10, 14, 39, 0.82);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     display: flex;
@@ -314,9 +336,9 @@ input[type="range"]::-webkit-slider-runnable-track {
     display: flex;
     gap: 10px;
     align-items: center;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--card-bg);
     padding: 12px 16px;
-    border-radius: 10px;
+    border-radius: var(--ui-radius);
     border: 1px solid var(--glass-border);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     font-size: 0.95rem;
@@ -335,16 +357,18 @@ input[type="range"]::-webkit-slider-runnable-track {
     align-self: flex-start;
     padding: 6px 10px;
     font-size: 0.85rem;
-    color: #0f172a;
-    background: #fcd34d;
+    font-weight: 700;
+    color: var(--nemesis-black);
+    background: var(--aurora-base);
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    transition: var(--motion-btn);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .overlay-retry:hover {
+    background: var(--aurora-hover);
     transform: translateY(-1px);
 }
 
@@ -353,8 +377,8 @@ input[type="range"]::-webkit-slider-runnable-track {
 }
 
 .overlay-spinner {
-    border: 3px solid rgba(255, 255, 255, 0.15);
-    border-top: 3px solid var(--primary-color);
+    border: 3px solid var(--glass-border);
+    border-top: 3px solid var(--aurora-base);
     border-radius: 50%;
     width: 24px;
     height: 24px;

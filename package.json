@@ -1,6 +1,6 @@
 {
   "name": "voxnemesis-phonon-extension",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Chrome extension for VoxNemesis TTS (Gradium Phonon engine) — on-device WASM TTS with 100+ voices",
   "main": "background.js",
   "directories": {

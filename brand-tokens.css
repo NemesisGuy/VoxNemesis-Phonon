@@ -1,0 +1,109 @@
+/* brand-tokens.css - NemesisNet production tokens
+ *
+ * Vendored from https://brand.nemesisnet.co.za/brand-tokens.css (v2026.10.11) so the
+ * extension speaks the same visual language as the main site. Mirrors the live site
+ * (https://nemesisnet.co.za) 1:1. Default = dark.
+ *
+ * Do not hand-edit: replace this file from the brand guide and diff it.
+ */
+
+:root {
+  --nemesis-blue: #1E88E5;
+  --nemesis-blue-bright: #2979FF;
+  --nemesis-blue-deep: #0f4c81;
+
+  --aurora-base: #00C2A8;
+  --aurora-flare: #33D6B7;
+  --aurora-ember: #008B6A;
+  --aurora-glow: rgba(0,194,168,0.12);
+  --aurora-hover: var(--aurora-flare);
+
+  --nemesis-gray: #3b3b3b;
+  --nemesis-black: #0a0e27;
+  --nemesis-white: #F4F4F4;
+
+  --accent-color: var(--nemesis-blue);
+  --accent-hover: var(--nemesis-blue-bright);
+  --accent-glow: rgba(41,121,255,0.14);
+
+  --secondary-accent: #2979FF;
+  --secondary-glow: rgba(41,121,255,0.07);
+
+  --bg-color: var(--nemesis-black);
+  --bg-gradient: radial-gradient(circle at 20% 20%, rgba(41,121,255,0.28) 0%, transparent 42%), radial-gradient(circle at 80% 10%, rgba(0,194,168,0.22) 0%, transparent 45%), radial-gradient(circle at 60% 80%, rgba(41,121,255,0.18) 0%, transparent 55%), #0a0e27;
+
+  --text-color: var(--nemesis-white);
+  --text-muted: rgba(244,244,244,0.82);
+
+  --card: #0f0f10;
+  --card-bg: rgba(255,255,255,0.03);
+  --card-border: rgba(255,255,255,0.06);
+
+  --glass-bg: rgba(255,255,255,0.03);
+  --glass-border: rgba(255,255,255,0.06);
+
+  --header-bg: linear-gradient(135deg, rgba(41,121,255,0.04), rgba(255,111,60,0.03));
+
+  /* Live font stack (system - no webfont dependency) */
+  --font-stack: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+
+  --ui-radius: 12px;
+  --radius-base: 20px;
+  --space-xs: 6px;
+  --space-sm: 12px;
+  --space-md: 20px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+
+  /* Live motion: 300ms ease for buttons/links, 360ms for cards */
+  --ease-live: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-btn: all 0.3s var(--ease-live);
+  --motion-card: transform 0.36s var(--ease-live), box-shadow 0.36s ease, border-color 0.28s ease;
+}
+
+/* Primary button pattern (live .btn-glass): glass base, solid accent hover */
+.btn-glass {
+  padding: 12px 28px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--text-color);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--ui-radius);
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--motion-btn);
+}
+
+.btn-glass:hover {
+  background: var(--accent-hover);
+  color: #0a0e27;
+  border-color: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--accent-glow);
+}
+
+/* Solid primary + gradient dual (live .btn--primary / .btn--dual) */
+.btn-primary {
+  background: var(--nemesis-blue);
+  color: #0a0e27;
+  border: 1px solid transparent;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.btn-primary:hover {
+  background: #2979FF;
+  box-shadow: 0 12px 36px rgba(41,121,255,0.28);
+  transform: translateY(-2px) scale(1.01);
+}
+
+.btn-dual {
+  background: linear-gradient(90deg, var(--nemesis-blue) 0%, var(--aurora-base) 100%);
+  color: #0a0e27;
+  border: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+}

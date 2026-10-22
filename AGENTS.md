@@ -48,6 +48,7 @@ popup.js ──────► background.js ──────► offscreen.js 
 - `lib/voices.js` — **generated**. Edit `scripts/fetch-assets.js`, never the file.
 - `lib/helper.js` — pure helpers: the speed mapping, the seek arithmetic, the seed check. All unit-tested.
 - `lib/phonon-tts/` — vendored npm package. Do not edit. Do not "improve". Bump it by replacing the folder and re-reading its README.
+- `brand-tokens.css` — the NemesisNet production tokens, vendored verbatim from the brand guide. Do not hand-edit it; replace it from the brand guide and diff. `style.css` is the only file allowed to add a token, and it adds exactly one.
 
 ## The Message Protocol
 

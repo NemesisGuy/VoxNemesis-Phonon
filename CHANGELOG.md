@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+- Rebuilt the popup on the NemesisNet production palette: `brand-tokens.css` is vendored verbatim from the brand guide, and `style.css` consumes it.
+- Dropped the Google Fonts request for the brand's system font stack. The extension now makes no third-party network request at all.
+- Verified in Opera GX 136 as well as Chromium. The smoke test takes a `BROWSER_EXECUTABLE` environment variable.
+
 ## 0.1.0
 - Initial release: VoxNemesis TTS (Phonon Edition).
 - Gradium Phonon runs entirely in the browser through the `phonon-tts` wasm package, in a module worker inside an MV3 offscreen document.

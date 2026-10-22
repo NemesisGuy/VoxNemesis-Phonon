@@ -11,20 +11,28 @@ const fs = require('fs');
 const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
 
 const EXTENSION_PATH = path.resolve(__dirname, '..');
-const PROFILE = path.join(os.tmpdir(), 'voxnemesis-phonon-smoke');
+const PROFILE = process.env.BROWSER_PROFILE || path.join(os.tmpdir(), 'voxnemesis-phonon-smoke');
+// Set BROWSER_EXECUTABLE to run against a specific browser, e.g. Opera GX:
+//   $env:BROWSER_EXECUTABLE="$env:LOCALAPPDATA\Programs\Opera GX\opera.exe"
+const EXECUTABLE = process.env.BROWSER_EXECUTABLE || undefined;
 
 async function main() {
     fs.rmSync(PROFILE, { recursive: true, force: true });
 
-    const context = await chromium.launchPersistentContext(PROFILE, {
+    const launch = {
         headless: false,
         args: [
             `--disable-extensions-except=${EXTENSION_PATH}`,
             `--load-extension=${EXTENSION_PATH}`,
             '--enable-unsafe-extension-debugging',
-            '--autoplay-policy=no-user-gesture-required'
+            '--autoplay-policy=no-user-gesture-required',
+            '--no-first-run',
+            '--no-default-browser-check'
         ]
-    });
+    };
+    if (EXECUTABLE) launch.executablePath = EXECUTABLE;
+
+    const context = await chromium.launchPersistentContext(PROFILE, launch);
 
     const logs = [];
     context.on('console', (msg) => logs.push(`[console:${msg.type()}] ${msg.text()}`));
