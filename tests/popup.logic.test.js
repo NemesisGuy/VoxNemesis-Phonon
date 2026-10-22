@@ -117,6 +117,16 @@ describe('derivePlaybackState', () => {
         const state = derivePlaybackState({ mode: 'streaming', lastText: 'hello' });
         expect(state.canPlay).toBe(true);
     });
+
+    it('offers play when the page has a selection', () => {
+        const state = derivePlaybackState({ mode: 'idle' }, true);
+        expect(state.canPlay).toBe(true);
+        expect(state.label).toContain('selection');
+    });
+
+    it('leaves play disabled when there is nothing to read', () => {
+        expect(derivePlaybackState({ mode: 'idle' }, false).canPlay).toBe(false);
+    });
 });
 
 describe('timelineLabels', () => {

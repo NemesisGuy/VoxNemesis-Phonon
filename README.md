@@ -14,9 +14,11 @@ Phonon streams: the first audio arrives in tens of milliseconds, before the sent
 - **Scrubbing.** "Generate Audio" builds a clip you can play, pause, seek and replay. "Play" streams the selection straight away.
 - **Context menu.** Right-click selected text, read it aloud.
 - **Runs offline.** Drop the checkpoint into `models/` and the extension never touches the network again.
+- **CPU by default, WebGPU on request.** The current runtime's WebGPU path corrupts long audio, so the extension starts on the CPU and says so.
 
 ## Known Limitations
 
+- **WebGPU produces corrupted audio in the current runtime.** `phonon-tts` 0.4.1's WebGPU path overshoots the model's frame budget, and the overshoot comes back as NaN samples: a burst of noise in the middle of the utterance, roughly twice the expected length. The CPU path is clean. **The extension therefore defaults to the CPU**, and WebGPU is offered as an opt-in for a runtime where it works. This is an upstream bug in [`gradium-ai/xn-ptts`](https://github.com/gradium-ai/xn-ptts), not in the extension: `scripts/audio-diagnostic.js` reproduces it outside the extension entirely. Reported as [xn-ptts#248](https://github.com/gradium-ai/xn-ptts/issues/248).
 - **No voice cloning in the browser.** The wasm build has no encoder for turning a recording into an embedding. Only precomputed voices work. Voice cloning is available in the Phonon desktop runtimes and the Gradium Studio, not here.
 - **The gated checkpoints cannot be downloaded by the extension.** A browser has no Hugging Face token to send, so the Phonon 40m repos are unreachable. They work from local files: see [Running a local checkpoint](#running-a-local-checkpoint).
 - **Seeking a streamed utterance is approximate.** Phonon gives no word timings, so a seek in streaming mode restarts the generation from an approximate point in the text. A buffered clip seeks exactly.
@@ -134,6 +136,8 @@ node scripts/smoke-test.js
 ```
 
 The extension has been verified in both Chromium and Opera GX 136.
+
+- `node scripts/audio-diagnostic.js` runs the model outside the extension and writes the WAVs out, so a bad generation can be inspected rather than guessed at. `scripts/analyse_audio.py` reads them and reports the NaN runs. This is what proved the WebGPU bug was upstream.
 - `npm run fetch:voices` regenerates `lib/voices.js` from the Gradium catalog.
 - The upstream runtime is vendored in `lib/phonon-tts/`. It is not modified. To move to a new version, replace the folder and read its README again — the API moves.
 

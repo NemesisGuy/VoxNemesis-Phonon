@@ -62,8 +62,11 @@ async function setupOffscreenDocument(path) {
 /** The text selected in the active tab, or an empty string. */
 async function getActiveSelection() {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tabs.length === 0 || !tabs[0].id) return '';
-    return getSelectedText(tabs[0].id);
+    // The popup's own page can be the active tab when it was opened as a tab rather than as
+    // a popup. It has no content script and cannot be scripted into.
+    const tab = tabs.find((t) => !t.url || !t.url.startsWith('chrome-extension://'));
+    if (!tab || !tab.id) return '';
+    return getSelectedText(tab.id);
 }
 
 function ensureContextMenu() {
@@ -221,7 +224,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             } else if (request.command === 'init') {
                 sendResponse(await forward('init', { options: request.options || {} }));
             } else if (request.command === 'switchModel') {
-                sendResponse(await forward('switchModel', { modelId: request.modelId, lang: request.lang }));
+                sendResponse(await forward('switchModel', {
+                    modelId: request.modelId,
+                    lang: request.lang,
+                    device: request.device
+                }));
             }
         } catch (err) {
             console.error(err);

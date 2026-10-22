@@ -68,9 +68,22 @@ export function languagesForModel(modelId) {
     });
 }
 
-/** The playback state the popup's buttons should be in. */
-export function derivePlaybackState(status) {
-    if (!status) return { canPlay: false, canPause: false, canStop: false, label: 'Ready to read' };
+/**
+ * The playback state the popup's buttons should be in.
+ *
+ * `hasSelection` matters: on a fresh popup there is no clip and nothing has been spoken
+ * yet, but the user may well have text selected on the page and expect Play to read it.
+ * A Play button that is disabled until something has been generated is a dead end.
+ */
+export function derivePlaybackState(status, hasSelection = false) {
+    if (!status) {
+        return {
+            canPlay: hasSelection,
+            canPause: false,
+            canStop: false,
+            label: hasSelection ? 'Press play to read the selection' : 'Ready to read'
+        };
+    }
 
     if (status.isPlaying) {
         return { canPlay: false, canPause: true, canStop: true, label: 'Playing...' };
@@ -84,7 +97,12 @@ export function derivePlaybackState(status) {
     if (status.mode === 'streaming' && status.lastText) {
         return { canPlay: true, canPause: false, canStop: true, label: 'Ready to play' };
     }
-    return { canPlay: false, canPause: false, canStop: false, label: 'Ready to read' };
+    return {
+        canPlay: hasSelection,
+        canPause: false,
+        canStop: false,
+        label: hasSelection ? 'Press play to read the selection' : 'Ready to read'
+    };
 }
 
 /** The timeline's two labels. */

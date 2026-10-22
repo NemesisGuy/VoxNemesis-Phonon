@@ -20,6 +20,7 @@ import { findVoice } from './lib/voices.js';
     let isDragging = false;
     let currentModelId = DEFAULT_MODEL;
     let status = null;
+    let hasSelection = false;
     let overlayGuardInterval = null;
 
     function cacheElements() {
@@ -29,7 +30,7 @@ import { findVoice } from './lib/voices.js';
             'temperatureRange', 'temperatureValue', 'seedInput',
             'generateBtn', 'playBtn', 'pauseBtn', 'stopBtn',
             'statusMessage', 'loader', 'progressBar', 'currentTime', 'duration',
-            'fetchOverlay', 'overlayText', 'overlayRetry', 'modelNote'
+            'fetchOverlay', 'overlayText', 'overlayRetry', 'modelNote', 'deviceNote'
         ].forEach((id) => {
             el[id] = document.getElementById(id);
         });
@@ -55,6 +56,14 @@ import { findVoice } from './lib/voices.js';
         const parts = [model.license];
         if (model.gated) parts.push('gated on the Hub — needs local files');
         el.modelNote.textContent = parts.join(' · ');
+    }
+
+    function updateDeviceNote(device) {
+        if (device === 'cpu') {
+            el.deviceNote.textContent = 'Stable. The model runs in the worker.';
+        } else {
+            el.deviceNote.textContent = 'WebGPU is faster, but the current phonon-tts build can corrupt long audio.';
+        }
     }
 
     function populateLanguageSelect(modelId, selectedCode) {
@@ -124,6 +133,7 @@ import { findVoice } from './lib/voices.js';
         if (stored.device !== undefined) el.deviceSelect.value = stored.device;
 
         updateSliderLabels();
+        updateDeviceNote(el.deviceSelect.value);
         populateVoiceList([], stored.selectedVoiceName);
     }
 
@@ -165,7 +175,7 @@ import { findVoice } from './lib/voices.js';
 
     function updateUIState(next) {
         status = next || {};
-        const playback = derivePlaybackState(status);
+        const playback = derivePlaybackState(status, hasSelection);
         const labels = timelineLabels(status);
 
         el.playBtn.disabled = !playback.canPlay;
@@ -306,22 +316,33 @@ import { findVoice } from './lib/voices.js';
 
     async function getSelectionText() {
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tabs.length === 0 || !tabs[0].id) return '';
+        // The popup's own page can be the active tab when it was opened as a tab rather than
+        // as a popup. It has no content script and cannot be scripted into.
+        const tab = tabs.find((t) => !t.url || !t.url.startsWith('chrome-extension://'));
+        if (!tab || !tab.id) return '';
         try {
-            const response = await chrome.tabs.sendMessage(tabs[0].id, { command: 'getSelection' });
+            const response = await chrome.tabs.sendMessage(tab.id, { command: 'getSelection' });
             if (response && response.text) return response.text;
         } catch (err) {
             // The content script is not on this page; fall back to the scripting API.
         }
         try {
             const results = await chrome.scripting.executeScript({
-                target: { tabId: tabs[0].id },
+                target: { tabId: tab.id },
                 func: () => window.getSelection().toString()
             });
             return results && results[0] ? results[0].result : '';
         } catch (err) {
             return '';
         }
+    }
+
+    /** Whether the page has text selected, which is what makes Play worth pressing. */
+    async function updateHasSelection() {
+        const text = await getSelectionText();
+        hasSelection = Boolean(text && text.trim());
+        updateUIState(status);
+        return hasSelection;
     }
 
     async function handleModelChange() {
@@ -332,13 +353,34 @@ import { findVoice } from './lib/voices.js';
         saveSettings();
 
         showOverlay('Switching model...', false);
-        const response = await sendCommand('switchModel', { modelId: currentModelId });
+        const response = await sendCommand('switchModel', {
+            modelId: currentModelId,
+            device: el.deviceSelect.value
+        });
         if (response && response.error) {
             hideOverlay(null);
             updateStatus(response.error, { isError: true });
             return;
         }
         await refreshStatus();
+    }
+
+    async function handleDeviceChange() {
+        saveSettings();
+        updateDeviceNote(el.deviceSelect.value);
+
+        showOverlay('Reloading the model...', false);
+        const response = await sendCommand('switchModel', {
+            modelId: el.modelSelect.value,
+            device: el.deviceSelect.value
+        });
+        if (response && response.error) {
+            hideOverlay(null);
+            updateStatus(response.error, { isError: true });
+            return;
+        }
+        await refreshStatus();
+        hideOverlay('Model ready.');
     }
 
     function handleVoiceChange() {
@@ -358,7 +400,7 @@ import { findVoice } from './lib/voices.js';
             saveSettings();
         });
         el.voiceSelect.addEventListener('change', handleVoiceChange);
-        el.deviceSelect.addEventListener('change', saveSettings);
+        el.deviceSelect.addEventListener('change', handleDeviceChange);
         el.seedInput.addEventListener('change', saveSettings);
 
         ['speedRange', 'volumeRange', 'temperatureRange'].forEach((id) => {
@@ -416,6 +458,13 @@ import { findVoice } from './lib/voices.js';
         bindEvents();
         await loadSettings();
         await refreshStatus();
+        await updateHasSelection();
         startOverlayGuard();
+    });
+
+    // The popup regains focus when the user clicks back into it, and the selection on the
+    // page may have changed while it was open.
+    window.addEventListener('focus', () => {
+        updateHasSelection();
     });
 })();

@@ -35,7 +35,11 @@ const state = {
     tts: null,
     modelId: DEFAULT_MODEL,
     lang: 'en',
-    device: 'auto',
+    // The CPU by default, not 'auto'. phonon-tts 0.4.1's WebGPU path in xn-ptts produces
+    // corrupted audio on this checkpoint: it overshoots the frame budget and the overshoot
+    // comes back as NaN samples, which is a burst of noise. The CPU path is clean. WebGPU is
+    // still selectable, for a runtime where it works.
+    device: 'cpu',
     quant: 'q8',
     ready: false,
     loading: false,
@@ -762,12 +766,17 @@ function getStatus() {
 const handlers = {
     init: (msg) => initEngine(msg.options || {}),
     switchModel: async (msg) => {
-        const next = msg.modelId;
-        if (!next || next === state.modelId) return { ready: state.ready };
+        const next = msg.modelId || state.modelId;
+        const device = msg.device || state.device;
+        const lang = msg.lang || state.lang;
+        if (next === state.modelId && device === state.device && lang === state.lang) {
+            return { ready: state.ready };
+        }
         state.modelId = next;
+        state.device = device;
         state.ready = false;
         stopPlayback({ keepBuffer: false });
-        return initEngine({ modelId: next, lang: msg.lang, device: msg.device });
+        return initEngine({ modelId: next, lang, device });
     },
     speak: (msg) => speak(msg.text, msg.settings || {}, { autoplay: msg.autoplay, modelId: msg.modelId }),
     play: () => play(),

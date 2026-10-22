@@ -78,11 +78,12 @@
                 <label for="deviceSelect">Device</label>
                 <div class="select-wrapper">
                     <select id="deviceSelect">
-                        <option value="auto" selected>Auto (WebGPU if available)</option>
-                        <option value="cpu">CPU (WASM)</option>
+                        <option value="cpu" selected>CPU (WASM) — stable</option>
+                        <option value="auto">Auto (WebGPU if available)</option>
                         <option value="webgpu">WebGPU</option>
                     </select>
                 </div>
+                <div id="deviceNote" class="field-note"></div>
             </div>
 
             <!-- Timeline -->
