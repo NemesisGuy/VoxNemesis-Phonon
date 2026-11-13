@@ -45,27 +45,32 @@ The runtime is MIT OR Apache-2.0. The weights carry their own licences: 31m is A
 
 ## Load the Extension
 
-You do **not** need Node or npm to use the extension, and **you do not need a zip**. The model downloads automatically inside the extension on first use.
+You do **not** need Node or npm to use the extension. The model downloads automatically inside the extension on first use.
 
-### Opera GX
+### Install from a release zip
 
-1. Open Opera GX.
-2. Go to `opera://extensions` — type it straight into the address bar. `chrome://extensions` also works.
-3. Turn on **Developer mode** (the toggle at the top right).
-4. Click **Load unpacked**.
-5. Pick the folder that contains `manifest.json`: `C:\Users\Reign\Projects\VoxNemesis-Phonon`. Not its parent, and not the `lib` folder.
-6. The extension appears as **VoxNemesis TTS (Phonon Edition)**. Pin it: click the puzzle-piece icon in the toolbar, find the extension, and pin it.
+If you downloaded a zip from the [releases page](https://github.com/NemesisGuy/VoxNemesis-Phonon/releases), install it like this:
 
-### Chrome or Edge
+1. Download the latest `voxnemesis-phonon-extension-<version>.zip` from the releases page.
+2. Right-click the zip and choose **Extract All…** — unzip it somewhere you will keep it, like `Documents\Extensions`. The browser loads the extension from this folder every time it starts, so don't unzip to a temp directory and delete it later.
+3. Inside the unzipped folder you should see `manifest.json` sitting right at the top. If you instead see one folder containing `manifest.json`, that inner folder is the one you will pick in step 6.
+4. Open your browser and go to `chrome://extensions` (Chrome/Edge/Opera — in Opera you can also use `opera://extensions`).
+5. Turn on **Developer mode** — the toggle at the top right of the extensions page.
+6. Click **Load unpacked**, then browse to the folder from step 2 and select it. Not its parent, and not any subfolder.
+7. The extension appears as **VoxNemesis TTS (Phonon Edition)**. Pin it: click the puzzle-piece icon in the toolbar, find the extension, and pin it.
+8. First run downloads the model from Hugging Face (roughly 100 MB+), so give the first read a moment to finish.
 
-Same steps, on `chrome://extensions` or `edge://extensions`.
+### From the source folder
+
+If you cloned this repository instead of downloading a release zip, follow the same steps but pick the folder you cloned to. You don't need to build anything first, and you don't need a zip.
+
+On Opera GX, go to `opera://extensions` — type it straight into the address bar. `chrome://extensions` also works. On Chrome or Edge, use `chrome://extensions` or `edge://extensions`.
 
 > Chrome 137 and newer refuse `--load-extension` in branded builds. Loading unpacked through the extensions page still works. If you script the load, use Chromium or pass `--enable-unsafe-extension-debugging`. Opera GX 136 is on Chromium 136 and accepts the flag either way.
 
 ### When you *do* need a zip
 
 - Submitting to the Chrome Web Store or the Opera addons store.
-- Sharing the extension with someone who does not have the folder.
 
 For that, package the tracked files:
 
@@ -73,7 +78,7 @@ For that, package the tracked files:
 git archive -o release/voxnemesis-phonon-extension-<ver>.zip HEAD
 ```
 
-An unpacked folder never needs archiving. The zip is a store submission format, not an install format.
+The zip built with `git archive` is for store submission; for installing by hand, use a release zip from the releases page.
 
 ## Brand
 
