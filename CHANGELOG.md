@@ -1,6 +1,7 @@
 # Changelog
 
 ## 0.1.3
+- Docs spelling fixed: `VoxNemasis` → `VoxNemesis` and `NemasisNet` → `NemesisNet` throughout README.
 - The WebGPU options are disabled rather than offered. They were reachable, and the current runtime's WebGPU path corrupts the audio, so the extension now has no way to reach it.
 - A stored `device` of `auto` or `webgpu` from an older version is overwritten with `cpu` on load.
 - Added `scripts/audio-diagnostic.js`, `scripts/analyse_audio.py` and `scripts/swap-wasm.ps1`: the harness that proved the upstream WebGPU bug, the WAV analyser that reads its output, and the tool that puts a locally built `ptts-wasm` into the extension so a change to the runtime can be tested against the real engine.
